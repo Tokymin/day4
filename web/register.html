@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- 可选的Bootstrap主题文件（一般不使用） -->
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"></script>
+
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        var n = 0;
+
+        function onimgclick() {
+            document.getElementById("img").src = "imagecode?n=" + n;
+            n++;
+        }
+    </script>
+    <script>
+        function getXMLHttpRequest() {
+            if (window.XMLHttpRequest) {
+                var xmlhttp = new XMLHttpRequest();
+            } else {
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            return xmlhttp;
+        }
+
+        var tempusername = false;
+        var temppassword = false;
+        var tempcheckcode = false;
+
+        function onusernamekeyup() {
+            var username = document.getElementById("username").value;
+            var usernametext = document.getElementById("usernametext");
+            if (username.length < 6) {
+                usernametext.style.color = "red";
+                usernametext.innerHTML = "用户名不可少于6位";
+                tempusername = false;
+                return;
+
+            }
+            var xmlhttp = getXMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    var str = xmlhttp.responseText;
+                    if (str == "true") {
+                        //可用
+                        usernametext.style.color = "green";
+                        usernametext.innerHTML = "用户名可用";
+                        tempusername = true;
+
+                    } else {
+                        usernametext.style.color = 'red';
+                        usernametext.innerHTML = "用户名已经存在";
+                        tempusername = false;
+                    }
+                }
+            };
+            var url = "checkusername";
+            xmlhttp.open("post", url);
+            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlhttp.send("username=" + username);
+
+            //永远让点击登录失效
+            return false;
+        }
+
+        function oncheckcodekeyup() {
+            var useCheckCode = document.getElementById("checkcode").value;
+            var checkcodetext = document.getElementById("checcodetext");
+            if (useCheckCode.length != 4) {
+                checkcodetext.style.color = "red";
+                checkcodetext.innerHTML = "验证码位数不对"；
+        tempcheckcode = false;
+                return;
+
+
+            }
+            var xmlhttp = getXMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    var str = xmlhttp.responseText;
+                    if (str == useCheckCode) {
+                        //验证码正确
+                        checkcodetext.style.color = "green";
+                        checkcodetext.innerHTML = "验证码正确";
+                        tempcheckcode = true;
+
+                    } else {
+                        checkcodetext.style.color = "red";
+                        checkcodetext.innerHTML = "验证码错误";
+                        tempcheckcode = false;
+
+                    }
+                }
+            };
+            var url = "textcode";
+            //打开连接,以post方式打开url这个连接
+            xmlhttp.open("post", url);
+            //设置请求头信息
+            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+            xmlhttp.send();
+            return false;
+        }
+
+        function onpasswordchanged() {
+            var password = document.getElementById("password").value;
+            var repassword = document.getElementById("repassword").value;
+            var passwordtext = document.getElementById("passwordtext");
+            if (password == repassword) {
+                passwordtext.style.color = "green";
+                passwordtext.innerHTML = "两次密码输入一致";
+                temppassword = true;
+            } else {
+                passwordtext.style.color = "red";
+                passwordtext.innerHTML = "两次密码输入不一致";
+                temppassword = false;
+            }
+
+        }
+
+        function onregisterclick() {
+            return tempusername && temppassword && tempcheckcode;
+        }
+    </script>
+
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-4 column">
+        </div>
+        <div class="col-md-4 column">
+            <center>
+                <h3>
+                    用户注册
+                </h3>
+            </center>
+            <form role="form" action="register" method="post">
+                <div class="form-group">
+                    <label for="exampleInputEmail1" id="usernametext">用户名</label><input type="text"
+                                                                                        onkeyup="onusernamekeyup()"
+                                                                                        class="form-control"
+                                                                                        id="username" name="username"/>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1">密码</label><input onkeyup="onpasswordchanged();" type="password"
+                                                                        class="form-control" id="password"
+                                                                        name="password"/>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1" id="passwordtext">密码重复</label><input
+                        onkeyup="onpasswordchanged();" type="password" class="form-control" id="repassword"/>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1" id="checkcodetext">验证码</label><input type="text"
+                                                                                            class="form-control"
+                                                                                            id="checkcode"
+                                                                                            name="checkcode"
+                                                                                            onkeyup="oncheckcodekeyup();"/>
+                    <img id="img" src="imagecode" onclick="onimgclick();"/>
+                </div>
+
+                <button type="submit" class="btn btn-default" onclick="return onregisterclick();">注册</button>
+            </form>
+        </div>
+        <div class="col-md-4 column">
+        </div>
+    </div>
+</div>
+</body>
+</html>
